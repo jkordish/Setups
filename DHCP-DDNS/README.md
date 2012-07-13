@@ -5,7 +5,7 @@ Tested and implemented on OpenBSD 5.1.
 ###
 bash-4.2# uname -a
 
-OpenBSD puffy 5.1 GENERIC#160 i386
+    OpenBSD puffy 5.1 GENERIC#160 i386
 
 bash-4.2# uptime
 
