@@ -1,84 +1,108 @@
 Relatively simple setup to enable a local DHCP server with dynamic DNS updates for a lab domain.
 
-Tested and implemented on OpenBSD 5.1.
+# Tested and implemented on OpenBSD 5.1.
 
 ###
+
 bash-4.2# uname -a
 
     OpenBSD puffy 5.1 GENERIC#160 i386
-
-bash-4.2# uptime
-
-    7:53AM  up 1 day, 31 mins, 1 user, load averages: 0.32, 0.26, 0.23
 
 bash-4.2# cat /etc/myname
     
     puffy.lab.ttc
     
-bash-4.2# pkg_add -r <your repo here>/pub/OpenBSD/5.1/packages/i386/isc-dhcp-server-4.2.3.2.tgz
+###
 
-bash-4.2# pkg_info -a
+# Instructions
 
-    isc-dhcp-server-4.2.3.2 ISC DHCP Server
+The shipped DHCPD server does not support ddns so we must install the ISC-DHCPD one.
+
+    bash-4.2# pkg_add -r ftp://mirror.esc7.net/pub/OpenBSD/5.1/packages/i386/isc-dhcp-server-4.2.3.2.tgz
+
+You can verify that you installed it.
+
+    bash-4.2# pkg_info -a
+
+        isc-dhcp-server-4.2.3.2 ISC DHCP Server
+
+Create some additional NAMED files for logs.
     
-bash-4.2# touch /var/named/named.run
+    bash-4.2# touch /var/named/named.run
 
-bash-4.2# touch /var/named/named_query.log
+    bash-4.2# touch /var/named/named_query.log
 
-bash-4.2# touch /var/named/named_dump.db
+    bash-4.2# touch /var/named/named_dump.db
 
-bash-4.2# chown named:named /var/named/named.run
+    bash-4.2# chown named:named /var/named/named.run
 
-bash-4.2# chown named:named /var/named/named_query.log
+    bash-4.2# chown named:named /var/named/named_query.log
 
-bash-4.2# chown named:named /var/named/named_dump.db
+    bash-4.2# chown named:named /var/named/named_dump.db
 
-bash-4.2# echo 'dhcpd_flags=""' >> /etc/rc.conf.local
+You will want to change the permission since we are running as user NAMED.
 
-bash-4.2# echo 'named_flags="-u named -d 3"' >> /etc/rc.conf.local
+    bash-4.2# chown named:named /var/named/master
 
-# fix up your dhcpd.conf and named.conf files using mine as a templates
+    bash-4.2# chgrp named /var/named/etc
 
-# Ensure your permissions for /var/named/ are correct
+    bash-4.2# chown named:named /var/named/etc/*
 
-bash-4.2# ls -l /var/named/
 
-    drwxr-xr-x  2 root   wheel      512 Jul 12 07:21 dev
+Ensure your permissions for /var/named/ are correct. The following are what mine look like.
+###### you may not have some of the db. files just yet.
 
-    drwxr-x---  2 root   named      512 Jul 11 10:59 etc
+    bash-4.2# ls -l /var/named/
 
-    drwxrwxr-x  2 named  named      512 Jul 13 06:26 master
+        drwxr-xr-x  2 root   wheel      512 Jul 12 07:21 dev
 
-    -rw-rw-r--  1 named  named  4564137 Jul 13 07:52 named.run
+        drwxr-x---  2 root   named      512 Jul 11 10:59 etc
 
-    -rw-rw-r--  1 named  named        0 Jul 12 07:31 named_dump.db
+        drwxrwxr-x  2 named  named      512 Jul 13 06:26 master
 
-    -rw-rw-r--  1 named  named        0 Jul 12 07:31 named_query.log
+        -rw-rw-r--  1 named  named  4564137 Jul 13 07:52 named.run
 
-    drwxrwxr-x  2 root   named      512 Feb 12 10:32 slave
+        -rw-rw-r--  1 named  named        0 Jul 12 07:31 named_dump.db
 
-    drwxr-xr-x  2 root   wheel      512 Jul 11 10:28 standard
+        -rw-rw-r--  1 named  named        0 Jul 12 07:31 named_query.log
 
-    drwxrwxr-x  2 root   named      512 Feb 12 10:32 tmp
+        drwxrwxr-x  2 root   named      512 Feb 12 10:32 slave
 
-bash-4.2# ls -l /var/named/etc/
+        drwxr-xr-x  2 root   wheel      512 Jul 11 10:28 standard
 
-    -rw-r-----  1 named  named  1549 Jul 12 13:51 named.conf
+        drwxrwxr-x  2 root   named      512 Feb 12 10:32 tmp
 
-    -rw-r-----  1 named  named    77 Jul 11 10:59 rndc.key
+    bash-4.2# ls -l /var/named/etc/
 
-    -rw-r--r--  1 named  named  3110 Feb 12 10:32 root.hint
+        -rw-r-----  1 named  named  1549 Jul 12 13:51 named.conf
 
-bash-4.2# ls -l /var/named/etc/master/
+        -rw-r-----  1 named  named    77 Jul 11 10:59 rndc.key
 
-    -rw-r--r--  1 named  named   794 Jul 13 06:26 db.10.120.10
+        -rw-r--r--  1 named  named  3110 Feb 12 10:32 root.hint
 
-    -rw-r--r--  1 named  named  1478 Jul 13 06:26 db.lab.ttc
+    bash-4.2# ls -l /var/named/etc/master/
+
+        -rw-r--r--  1 named  named   794 Jul 13 06:26 db.10.120.10
+
+        -rw-r--r--  1 named  named  1478 Jul 13 06:26 db.lab.ttc
     
-# Change the daemon in /etc/rc.d/dhcpd to point to /usr/local/sbin/dhcpd
+Edit your /etc/dhcpd.conf file ensuring you are setting up DDNS correctly. Mine can be found here.
 
-bash-4.2# sed -i 's/\/usr\/sbin\/dhcpd/\/usr\/local\/sbin\/dhcpd/ /etc/rc.d/dhcpd
+Next edit your /var/named/named.conf. Once again, mine can be found here for reference.
 
-bash-4.2# /etc/rc.d/dhcpd start
+Change the daemon in /etc/rc.d/dhcpd to point to /usr/local/sbin/dhcpd
+###### I think this isn't the right way to do it since it may not stay during updates to the base os.
 
-bash-4.2# /etc/rc.d/named start
+    bash-4.2# sed -i 's/\/usr\/sbin\/dhcpd/\/usr\/local\/sbin\/dhcpd/' /etc/rc.d/dhcpd
+
+Add both DHCPD and NAMED to your /etc/rc.conf.local file for startup.
+
+    bash-4.2# echo 'dhcpd_flags=""' >> /etc/rc.conf.local
+
+    bash-4.2# echo 'named_flags="-u named -d 3"' >> /etc/rc.conf.local
+
+Now start both daemons. Hopefully they start...
+
+    bash-4.2# /etc/rc.d/dhcpd start
+
+    bash-4.2# /etc/rc.d/named start
