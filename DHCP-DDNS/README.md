@@ -24,7 +24,7 @@ You can verify that you installed it.
 
     bash-4.2# pkg_info -a
 
-        isc-dhcp-server-4.2.3.2 ISC DHCP Server
+    isc-dhcp-server-4.2.3.2 ISC DHCP Server
 
 Create some additional NAMED files for logs.
     
@@ -86,9 +86,9 @@ Ensure your permissions for /var/named/ are correct. The following are what mine
 
         -rw-r--r--  1 named  named  1478 Jul 13 06:26 db.lab.ttc
     
-Edit your /etc/dhcpd.conf file ensuring you are setting up DDNS correctly. Mine can be found here.
+Edit your /etc/dhcpd.conf file. Use the one I've provided for reference/template.
 
-Next edit your /var/named/named.conf. Once again, mine can be found here for reference.
+Edit your /var/named/named.conf file. Use the one I've provided for reference/template.
 
 Change the daemon in /etc/rc.d/dhcpd to point to /usr/local/sbin/dhcpd
 ###### I think this isn't the right way to do it since it may not stay during updates to the base os.
@@ -106,3 +106,6 @@ Now start both daemons. Hopefully they start...
     bash-4.2# /etc/rc.d/dhcpd start
 
     bash-4.2# /etc/rc.d/named start
+
+
+## Questions/Comments/Priases can be sent to me at Joe_at_ignota_cc
