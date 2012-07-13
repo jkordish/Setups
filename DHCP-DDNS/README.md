@@ -107,5 +107,6 @@ Now start both daemons. Hopefully they start...
 
     bash-4.2# /etc/rc.d/named start
 
+###
 
-## Questions/Comments/Priases can be sent to me at Joe_at_ignota_cc
+Questions/Comments/Priases can be sent to me at <joe@ignota.cc>
