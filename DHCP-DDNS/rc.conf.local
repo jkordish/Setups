@@ -1,0 +1,3 @@
+dhcpd_flags=""
+named_flags="-u named -d 3"
+ntpd_flags=""

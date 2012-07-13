@@ -1,0 +1,13 @@
+$ORIGIN .
+$TTL 8400	; 2 hours 20 minutes
+10.120.10.in-addr.arpa	IN SOA	puffy.lab.ttc. root.localhost. (
+				20120735   ; serial
+				86400      ; refresh (1 day)
+				7200       ; retry (2 hours)
+				432000     ; expire (5 days)
+				86400      ; minimum (1 day)
+				)
+			NS	puffy.lab.ttc.
+$ORIGIN 10.120.10.in-addr.arpa.
+$TTL 8400	; 2 hours 20 minutes
+254			PTR	puffy.lab.ttc.
