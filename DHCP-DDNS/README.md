@@ -110,3 +110,22 @@ Now start both daemons. Hopefully they start...
 ###
 
 Questions/Comments/Priases can be sent to me at <joe@ignota.cc>
+
+
+## Addendum
+I've noticed two machines in my lab that never got a ddns record set during DHCP addressing.
+Apparently not all systems play nice with DHCP and don't send their
+hostname when they communicate with the server. You can manually force
+this on a linux machine.
+
+    Fedora 11: 
+    echo 'send host-name "fred";' >> /etc/dhclient-eth0.conf
+    Ubuntu 10.04: 
+    echo 'send host-name "barney";' >> /etc/dhcp3/dhclient.conf
+
+Depending on distrobution and version you may have to look in different
+locations.
+
+There may be cases were you are unable to send the hostname. You may
+force it within the dhcpd.conf file itself. Look at the dhcpd.conf file
+included for an example.
