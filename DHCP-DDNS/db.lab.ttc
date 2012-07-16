@@ -1,13 +1,13 @@
 $ORIGIN .
 $TTL 86400	; 1 day
-lab.ttc			IN SOA	puffy.lab.ttc. root.localhost. (
-				20120744   ; serial
+lab.ttc			IN SOA	puffy.lab.ttc. root.puffy.lab.ttc. (
+				20120844   ; serial
 				86400      ; refresh (1 day)
 				7200       ; retry (2 hours)
-				432000     ; expire (5 days)
+				3600000    ; expire (5 weeks 6 days 16 hours)
 				86400      ; minimum (1 day)
 				)
 			NS	puffy.lab.ttc.
 $ORIGIN lab.ttc.
-localhost		A	127.0.0.1
-ns			CNAME	puffy
+$TTL 86400	; 1 day
+puffy			A	10.120.10.254
