@@ -1,0 +1,12 @@
+[Unit]
+Description=Saint Daemon
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/usr/share/saint/saint -r -h *
+Restart=always
+WorkingDirectory=/usr/share/saint/
+
+[Install]
+WantedBy=multi-user.target

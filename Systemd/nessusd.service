@@ -1,0 +1,14 @@
+[Unit]
+Description=Nessus vulnerability scanner
+After=network.target
+
+[Service]
+Type=simple
+PIDFile=/opt/nessus/var/nessus/nessus-service.pid
+ExecStart=/opt/nessus/sbin/nessus-service -q
+Restart=on-abort
+ExecReload=/bin/kill -HUP `cat /opt/nessus/var/nessus/nessus-service.pid`
+
+[Install]
+WantedBy=multi-user.target
+Alias=nessusd.service
