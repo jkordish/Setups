@@ -3,8 +3,11 @@ This will allow you to inject artificial latency, bandwidth limits, and packet l
 
 ### Obtain Frenzy.
 This uses the bootable FreeBSD distrobution called Frenzy. The latest, as of writing, is 1.4 which is based off of FreeBSD 8.3 Stable.
+
         http://frenzy.org.ua/en/index.shtml
+
         wget ftp://ftp.frenzy.org.ua/pub/Frenzy/1.4/iso/frenzy-1.4-lite-en.iso
+
 You will of course now need to get that into your shared storage within vCenter.
 
 ### Setup virtual networking
@@ -49,7 +52,7 @@ That will create one pipe (1) for outgoing traffic and another (2) for incoming 
 It will also add 64ms of latency (delay) and a small packet loss (plr)
 
 #### Optional: Allocate more memory
-Dummynet can end up using a lot of memory based off of how much it is being taxed. This should help allievate that.
+Dummynet can end up using a lot of memory based off of how much it is being taxed. Allocate 32MB worth of memory to network mbufs.
         sysctl kern.ipc.nmbclusters=32768
 
 ### Done
