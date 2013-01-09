@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=forking
-ExecStart=/usr/share/saint/saint -R -h *
+ExecStart=/usr/share/saint/saint -R
 Restart=always
 WorkingDirectory=/usr/share/saint/
 
