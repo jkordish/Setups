@@ -1,0 +1,110 @@
+cat openstack.cfg
+keystone:
+    openstack-origin: "cloud:precise-folsom"
+    admin-password: "openstack"
+nova-cloud-controller:
+    openstack-origin: "cloud:precise-folsom"
+    network-manager: "FlatDHCPManager"
+nova-volume:
+    openstack-origin: "cloud:precise-folsom"
+    block-device: "sdb"
+    overwrite: "true"
+nova-compute:
+    openstack-origin: "cloud:precise-folsom"
+glance:
+    openstack-origin: "cloud:precise-folsom"
+openstack-dashboard:
+    openstack-origin: "cloud:precise-folsom"
+    webroot: "/"
+
+# On each provisioned server
+# need to figure out how to do this during provisioning
+sudo -e /etc/sysctl.conf:
+net.ipv4.ip_forward=1
+net.ipv4.tcp_syncookies=0
+net.ipv4.tcp_tw_recycle=1
+net.ipv4.tcp_tw_reuse=1
+net.bridge.bridge-nf-call-ip6tables = 0
+net.bridge.bridge-nf-call-iptables = 0
+net.bridge.bridge-nf-call-arptables = 0
+net.bridge.bridge-nf-filter-vlan-tagged = 0
+
+sudo sysctl -p
+sudo ufw disable
+sudo -e /etc/apt/apt.conf
+#Acquire::http::Proxy "http://<maas ip>:8000/";
+sudo aptitude update
+sudo modprobe 8021q
+sudo modprobe bonding
+aptitude install vlan vim ifenslave
+sudo -e /etc/modules
+bonding
+8021q
+
+# Before deploying mysql go do the above on the first node
+jitsu deploy-to 0 mysql
+jitsu deploy-to 0 --config=openstack.cfg nova-compute
+# next line will boot up and install nova-compute on the two extra nodes
+juju add-unit nova-compute
+juju add-unit nova-compute
+# That will fail because of /etc/apt/apt.conf
+# Have to remove/uncomment out the proxy line
+sudo -e /etc/apt/apt.conf
+	#Acquire::http::Proxy "http://<maas ip>:8000/";
+# Go do what you did on the first server as well.
+
+# Now retry the install on each host
+juju resolved -r nova-compute/1
+juju resolved -r nova-compute/2
+
+# Wait for the services to start
+jitsu deploy-to 1 --config=openstack.cfg keystone
+jitsu deploy-to 1 --config=openstack.cfg nova-cloud-controller
+jitsu deploy-to 1 --config=openstack.cfg nova-volume
+
+# Wait for the services to start
+jitsu deploy-to 1 --config=openstack.cfg  glance
+jitsu deploy-to 0 rabbitmq-server
+
+# Wait for the services to start
+jitsu deploy-to 1 --config=openstack.cfg openstack-dashboard
+
+### If juju status shows everything as kosher ###
+# I add the sleeps so I can just paste this all in the window and walk away #
+juju add-relation keystone mysql
+juju add-relation nova-cloud-controller mysql
+juju add-relation nova-cloud-controller rabbitmq-server
+juju add-relation nova-cloud-controller glance
+juju add-relation nova-cloud-controller keystone
+#juju remove-relation nova-volume nova-cloud-controller  && sleep 120
+#juju add-relation nova-volume mysql  && sleep 120
+juju add-relation nova-volume rabbitmq-server
+juju add-relation nova-compute mysql
+juju add-relation nova-compute rabbitmq-server
+juju add-relation nova-compute glance
+juju add-relation nova-compute nova-cloud-controller
+juju add-relation glance mysql
+juju add-relation glance keystone
+juju add-relation openstack-dashboard keystone
+
+
+
+# Once thats kosher
+juju expose openstack-dashboard
+juju expose nova-cloud-controller
+
+# Get the public ip for the dashboard (horizon)
+juju status openstack-dashboard
+web => http:/bladex.lab.ttc/horizon
+admin/openstack
+
+# Download your Download OpenStack RC File
+sftp/scp it up to your maas server
+source openrc.sh
+
+# add images
+wget -c https://uec-images.ubuntu.com/precise/current/precise-server-cloudimg-amd64-disk1.img precise-images/precise-amd64.img
+wget -c https://uec-images.ubuntu.com/precise/current/precise-server-cloudimg-i386-disk1.img precise-images/precise-i386.img
+
+glance image-create --name="precise-amd64" --is-public=true --container-format=ovf --disk-format=qcow2 < precise-images/precise-amd64.img
+glance image-create --name="precise-i386" --is-public=true --container-format=ovf --disk-format=qcow2 < precise-images/precise-i386.img

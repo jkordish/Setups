@@ -1,0 +1,30 @@
+{{inherit "preseed_master"}}
+
+{{def proxy}}
+d-i     mirror/country string manual
+{{if node.architecture in {'i386/generic', 'amd64/generic'} }}
+d-i     mirror/http/hostname string archive.ubuntu.com
+d-i     mirror/http/directory string /ubuntu
+{{else}}
+d-i     mirror/http/hostname string ports.ubuntu.com
+d-i     mirror/http/directory string /ubuntu-ports
+{{endif}}
+#d-i     mirror/http/proxy string http://{{server_host}}:8000/
+{{enddef}}
+
+{{def client_packages}}
+d-i     pkgsel/include string cloud-init openssh-server python-software-properties vim avahi-daemon vlan ifenslave-2.6  nova-novncproxy bridge-utils server^
+{{enddef}}
+
+{{def preseed}}
+{{preseed_data}}
+{{enddef}}
+
+{{def post_scripts}}
+# Executes late command and disables PXE.
+d-i     preseed/late_command string true && \
+    in-target sh -c 'f=$1; shift; echo $0 > $f && chmod 0440 $f $*' 'ubuntu ALL=(ALL) NOPASSWD: ALL' /etc/sudoers.d/maas && \
+    in-target wget --no-proxy "{{node_disable_pxe_url|escape.shell}}" --post-data "{{node_disable_pxe_data|escape.shell}}" -O /dev/null && \
+    true
+{{enddef}}
+

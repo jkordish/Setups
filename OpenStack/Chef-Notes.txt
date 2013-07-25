@@ -1,0 +1,160 @@
+cd /opt/rpcs/chef-cookbooks;
+git checkout iso;
+git pull origin iso;
+git submodule update;
+
+knife cookbook upload -a -o /opt/rpcs/chef-cookbooks/cookbooks;
+
+EDITOR=cat knife environment edit rpcs > rpcs.json.bak
+
+knife exec -E '@e=Chef::Environment.load("rpcs"); a=@e.override_attributes; a["nova"]["disk_test_filter"]=false; @e.override_attributes(a); @e.save'
+
+
+knife exec -E '@e=Chef::Environment.load("rpcs"); a=@e.override_attributes; a["swift"]["services"]["proxy"]["port"]=8180; @e.override_attributes(a); @e.save'
+
+
+
+
+knife exec -E '@e=Chef::Environment.load("rpcs"); @e.override_attributes(@e.override_attributes.merge({"swift"=>{"services"=>{"proxy"=>{"port"=>"8180"}}}})); @e.save'
+
+
+knife exec -E '@e=Chef::Environment.load("rpcs"); @e.override_attributes(@e.override_attributes.merge({"swift"}=>{"disk_test_filter"=> ["candidate =~ /sd[^a]/ or candidate =~ /hd[^a]/ or candidate =~ /vd[^a]/ or candidate =~ /xvd[^a]/",
+"File.exist?('/dev/' + candidate)",
+"not system('/sbin/parted /dev/' + candidate + ' -s print | grep linux-swap')",
+"not system('/bin/grep FAStT ' + '/sys/block/' + candidate + '/device/model')",
+"info['removable'] == 0.to_s"]
+}
+
+knife node run_list add blade2.lab.ttc 'role[swift-management-server]'
+
+knife node run_list add blade2.lab.ttc 'role[swift-account-server]'
+
+knife node run_list add blade2.lab.ttc 'role[swift-container-server]'
+
+knife node run_list add blade2.lab.ttc 'role[swift-object-server]'
+
+knife node run_list add blade2.lab.ttc 'role[swift-proxy-server]'
+
+knife node run_list add blade3.lab.ttc 'role[swift-account-server]'
+knife node run_list add blade3.lab.ttc 'role[swift-container-server]'
+knife node run_list add blade3.lab.ttc 'role[swift-object-server]'
+
+
+knife node run_list add blade4.lab.ttc 'role[swift-account-server]'
+knife node run_list add blade4.lab.ttc 'role[swift-container-server]'
+knife node run_list add blade4.lab.ttc 'role[swift-object-server]'
+
+
+# RPCS Network Setup
+knife exec -E '@e=Chef::Environment.load("rpcs"); \
+a=@e.override_attributes;\
+a["osops_networks"]["swift-lb"]="10.120.10.64/26"; \
+@e.override_attributes(a); @e.save'
+
+knife exec -E '@e=Chef::Environment.load("rpcs"); \
+a=@e.override_attributes; \
+a["osops_networks"]["swift-private"]="10.120.10.64/26"; \
+@e.override_attributes(a); @e.save'
+
+knife exec -E '@e=Chef::Environment.load("rpcs"); \
+a=@e.override_attributes; \
+a["osops_networks"]["swift"]="10.120.10.64/26"; \
+@e.override_attributes(a); @e.save'
+
+# Swift Set Hash
+knife exec -E '@e=Chef::Environment.load("rpcs"); \
+a=@e.override_attributes; \
+a.merge!({"swift" => {"swift_hash" => "d0851b5b43e5b062302100714b29385c"}}); \
+@e.override_attributes(a); @e.save'
+
+# Swift Change to Keystone Auth
+knife exec -E '@e=Chef::Environment.load("rpcs"); \
+a=@e.override_attributes; \
+a["swift"].merge!({"authmode" => "keystone"}); \
+@e.override_attributes(a); @e.save'
+
+# Swift Proxy Change Port
+knife exec -E '@e=Chef::Environment.load("rpcs"); \
+a=@e.override_attributes; \
+a["swift"].merge!({"services" => {"proxy" => {"port" => "8180"}}}); \
+@e.override_attributes(a); @e.save'
+
+# Swift Disk Filter
+knife exec -E '@e=Chef::Environment.load("rpcs"); \
+a=@e.override_attributes; \
+a["swift"].merge!({"disk_test_filter" => ["candidate =~ /sd[^a]/ or candidate =~ /hd[^a]/ or candidate =~ /vd[^a]/ or candidate =~ /xvd[^a]/", "File.exist?('/dev/' + candidate)", "not system('/sbin/parted /dev/' + candidate + ' -s print | grep linux-swap')", "not system('/bin/grep FAStT ' + '/sys/block/' + candidate + '/device/model')", "info['removable'] == 0.to_s"]}); \
+@e.override_attributes(a); @e.save'
+
+# Muti-host true
+knife exec -E '@e=Chef::Environment.load("rpcs"); \
+a=@e.override_attributes; \
+a["nova"].merge!({"network" => {"multi_host" => "true"}}); \
+@e.override_attributes(a); @e.save'
+
+# Enable Patches
+knife exec -E '@e=Chef::Environment.load("rpcs"); \
+a=@e.override_attributes; \
+a.merge!({"osops" => {"apply_patches" => true}}); \
+@e.override_attributes(a); @e.save'
+
+# Enable Monit
+knife exec -E '@e=Chef::Environment.load("rpcs"); \
+a=@e.override_attributes; \
+a.merge!({"override_attributes" => {"monit" => "true"}}); \
+@e.override_attributes(a); @e.save'
+
+# Single Gateway
+knife exec -E '@e=Chef::Environment.load("rpcs"); \
+a=@e.override_attributes; \
+a.merge!({"override_attributes" => {"config" => {"use_single_default_gateway" => true}}}); \
+@e.override_attributes(a); @e.save'
+
+# Theme Change
+knife exec -E '@e=Chef::Environment.load("rpcs"); \
+a=@e.override_attributes; \
+a.merge!({"horizon" => {"theme" => "default"}}); \
+@e.override_attributes(a); @e.save'
+
+# Package Component
+knife exec -E '@e=Chef::Environment.load("rpcs"); \
+a=@e.override_attributes; \
+a.merge!({"package_component" => "folsom"}); \
+@e.override_attributes(a); @e.save'
+
+# Platform Folsom
+knife exec -E '@e=Chef::Environment.load("rpcs"); \
+a=@e.override_attributes; \
+a.merge!({"platform" => "folsom"}); \
+@e.override_attributes(a); @e.save'
+
+# Glance Image Upload
+knife exec -E '@e=Chef::Environment.load("rpcs"); \
+a=@e.override_attributes; \
+a["glance"].merge!({"image_upload" => true}); \
+@e.override_attributes(a); @e.save'
+
+# Enable Swift Storage
+knife exec -E '@e=Chef::Environment.load("rpcs"); \
+a=@e.override_attributes; \
+a["glance"].merge!({"api" => {"default_store" => "swift"}}); \
+@e.override_attributes(a); @e.save'
+
+#nova test
+knife exec -E '@e=Chef::Environment.load("rpcs"); \
+a=@e.override_attributes; \
+a["nova"].merge!({"config" => {"start_guests_on_host_boot" => false}}); \
+@e.override_attributes(a); @e.save'
+
+knife exec -E '@e=Chef::Environment.load("rpcs"); \
+a=@e.override_attributes; \
+a["nova"].merge!({"config" => {"resume_guests_state_on_host_boot" => true}}); \
+@e.override_attributes(a); @e.save'
+
+# Swift Set Zones
+knife exec -E "nodes.find(:name => 'blade2.lab.ttc') \
+{|n| n.set['swift']['zone'] = '2'; n.save }"
+knife exec -E "nodes.find(:name => 'blade3.lab.ttc') \
+{|n| n.set['swift']['zone'] = '3'; n.save }"
+knife exec -E "nodes.find(:name => 'blade4.lab.ttc') \
+{|n| n.set['swift']['zone'] = '4'; n.save }"
+

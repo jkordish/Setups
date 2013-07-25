@@ -1,0 +1,37 @@
+### Setting up my floating IP pools based off of the network.
+
+nova-manage floating create --ip_range=10.120.10.128/26 --pool=MSS-Legacy --interface=br0
+nova-manage floating delete 10.120.10.129
+nova-manage floating create --ip_range=10.120.10.192/26 --pool=Lab-Legacy --interface=br0
+nova-manage floating delete 10.120.10.193
+nova-manage floating create --ip_range=10.120.40.0/24 --pool=MSS --interface=br0
+nova-manage floating delete 10.120.40.1
+nova-manage floating create --ip_range=10.120.50.0/24 --pool=Sandbox --interface=br0
+nova-manage floating delete 10.120.50.1
+nova-manage floating create --ip_range=10.120.60.0/24 --pool=Lab --interface=br0
+nova-manage floating delete 10.120.60.1
+
+# It is best to set your extra routes via the interfaces file but including here for reference
+route add -net 10.120.40.0 netmask 255.255.255.0 dev br0
+route add -net 10.120.40.0 netmask 255.255.255.0 gw 10.120.40.1
+route add -net 10.120.50.0 netmask 255.255.255.0 dev br0
+route add -net 10.120.50.0 netmask 255.255.255.0 gw 10.120.50.1
+route add -net 10.120.60.0 netmask 255.255.255.0 dev br0
+route add -net 10.120.60.0 netmask 255.255.255.0 gw 10.120.60.1
+
+
+### In case you wanted to remove it all -- sometimes I did for testing
+
+route del -net 10.120.40.0 netmask 255.255.255.0 dev br0
+route del -net 10.120.40.0 netmask 255.255.255.0 gw 10.120.40.1
+route del -net 10.120.50.0 netmask 255.255.255.0 dev br0
+route del -net 10.120.50.0 netmask 255.255.255.0 gw 10.120.50.1
+route del -net 10.120.60.0 netmask 255.255.255.0 dev br0
+route del -net 10.120.60.0 netmask 255.255.255.0 gw 10.120.60.1
+
+nova-manage floating delete --ip_range=10.120.10.0/24
+nova-manage floating delete --ip_range=10.120.20.0/24
+nova-manage floating delete --ip_range=10.120.30.0/24
+nova-manage floating delete --ip_range=10.120.40.0/24
+nova-manage floating delete --ip_range=10.120.50.0/24
+nova-manage floating delete --ip_range=10.120.60.0/24

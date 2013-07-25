@@ -1,0 +1,21 @@
+default: lab
+environments:
+  lab:
+    type: local
+    access-key: f89ed6ad543548cdb54dcf47f0118baa
+    secret-key: 6300ca3523f845aaaa5a6d14d6c6a8ec
+    control-bucket: juju-8c93f9b026a54785873b0f56dbb64ef2
+    admin-secret: 994fcfa9652c49338777ce176092796d
+    default-series: precise
+    ssl-hostname-verification: true
+    juju-origin: ppa
+    data-dir: /opt
+    default-image-id: 2
+    project-name: lab.ttc
+    auth-url: http://10.120.10.72:5000/v2.0/
+    auth-mode: userpass
+    type: openstack
+    use-floating-ip: true
+    region: RegionOne
+    username: juju
+    password: 97FruChUFru5aZaC

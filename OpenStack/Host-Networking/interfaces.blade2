@@ -1,0 +1,121 @@
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# eth0/1
+auto bond0
+iface bond0 inet manual
+        bond-slaves none
+        bond-mode 4
+        bond-lacp-rate 1
+        bond-miimon 100
+
+# eth2/3
+auto bond1
+iface bond1 inet manual
+        bond-slaves none
+        bond-mode 0
+        bond-miimon 100
+
+# 1Gig Interface
+auto eth0
+iface eth0 inet manual
+        bond-master bond0
+	bond-primary eth0 eth1
+
+# 1Gig Interface
+auto eth1
+iface eth1 inet manual
+        bond-master bond0
+	bond-primary eth0 eth1
+
+# 10Gig Interface
+auto eth2
+iface eth2 inet manual
+        bond-master bond1
+	bond-primary eth2 eth3
+
+# 10Gig Interface
+auto eth3
+iface eth3 inet manual
+        bond-master bond1
+	bond-primary eth2 eth3
+
+# NOVA - Public
+auto br0
+iface br0 inet static
+        address 10.120.10.72
+        netmask 255.255.255.192
+        network 10.120.10.64
+        broadcast 10.120.10.127
+        gateway 10.120.10.65
+        # dns-* options are implemented by the resolvconf package, if installed
+        dns-nameservers 10.120.10.254
+        dns-search entrudex.com
+        bridge_ports bond0
+        bridge_fd 0
+        bridge_maxwait 0
+	bridge_maxage 0
+	bridge_ageing 0
+        bridge_stp on
+
+
+# 10.120.10.128/26 - Old MSS
+#auto br20
+iface br20 inet manual
+        bridge_ports bond0.20 br0.20
+        bridge_fd 0
+        bridge_maxwait 0
+	bridge_maxage 0
+	bridge_ageing 0
+        bridge_stp off
+
+# 10.120.10.192/26 - Old Lab
+auto br30
+iface br30 inet manual
+        bridge_ports bond0.30 br0.30
+        bridge_fd 0
+        bridge_maxwait 0
+	bridge_maxage 0
+	bridge_ageing 0
+        bridge_stp off
+
+# 10.120.40.0/24 - MSS
+auto br40
+iface br40 inet manual
+        bridge_ports bond0.40 br0.40
+        bridge_fd 0
+        bridge_maxwait 0
+	bridge_maxage 0
+	bridge_ageing 0
+        bridge_stp off
+
+# 10.120.50.0/24 - SandBox
+auto br50
+iface br50 inet manual
+        bridge_ports bond0.50 br0.50
+        bridge_fd 0
+        bridge_maxwait 0
+	bridge_maxage 0
+	bridge_ageing 0
+	bridge_stp off
+
+# 10.120.60.0/24 - Lab
+auto br60
+iface br60 inet manual
+        bridge_ports bond0.60 br0.60
+        bridge_fd 0
+        bridge_maxwait 0
+	bridge_maxage 0
+	bridge_ageing 0
+        bridge_stp off
+
+# NOVA - Fixed (Private)
+auto br1
+iface br1 inet manual
+        bridge_ports bond1
+        bridge_fd 0
+        bridge_maxwait 0
+	bridge_maxage 0
+	bridge_ageing 0
+        bridge_stp on
