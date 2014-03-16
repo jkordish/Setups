@@ -1,0 +1,14 @@
+{
+  "xyz" : {
+    "children" : [ "xyz-webserver"  ]
+  },
+  "xyz-webserver" : { "children" : [ "xyz-apache", "xyz-ngix" ] },
+  "xyz-apache" : { "hosts" : ["10.10.10.108"] },
+  "xyz-ngix" : { "hosts" : ["10.10.10.107"] },
+  "_meta" : {
+    "hostvars" : {
+      "10.10.10.108" : { "name" : "apache01" },
+      "10.10.10.107" : { "name" : "ngix01" },
+    }
+  }
+}
